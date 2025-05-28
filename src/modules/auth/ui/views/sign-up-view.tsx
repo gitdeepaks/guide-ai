@@ -208,7 +208,7 @@ export const SignUpView = () => {
                     {socialPending.google ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
-                      <FaGoogle />
+                      <FaGoogle className="size-4" />
                     )}
                   </Button>
                   <Button
@@ -227,7 +227,7 @@ export const SignUpView = () => {
                     {socialPending.github ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
-                      <FaGithub />
+                      <FaGithub className="size-4" />
                     )}
                   </Button>
                 </div>
