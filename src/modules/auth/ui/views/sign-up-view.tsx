@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { z } from 'zod';
 
 const formSchema = z
@@ -37,8 +38,15 @@ export const SignUpView = () => {
   const router = useRouter();
 
   const [error, setError] = useState<string | null>(null);
-
   const [pending, setPending] = useState(false);
+  const [socialPending, setSocialPending] = useState<{
+    [key: string]: boolean;
+  }>({
+    google: false,
+    github: false,
+  });
+
+  const isAnySocialPending = Object.values(socialPending).some(Boolean);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,11 +67,12 @@ export const SignUpView = () => {
         name: data.name,
         email: data.email,
         password: data.password,
+        callbackURL: '/',
       },
       {
         onSuccess: () => {
-          router.push('/');
           setPending(false);
+          router.push('/');
         },
         onError: ({ error }) => {
           setError(error.message);
@@ -94,7 +103,12 @@ export const SignUpView = () => {
                       <FormItem>
                         <FormLabel>Name</FormLabel>
                         <FormControl>
-                          <Input type="text" placeholder="Henna" {...field} />
+                          <Input
+                            type="text"
+                            placeholder="Henna"
+                            {...field}
+                            disabled={isAnySocialPending}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -107,7 +121,11 @@ export const SignUpView = () => {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
+                          <Input
+                            placeholder="m@example.com"
+                            {...field}
+                            disabled={isAnySocialPending}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -124,6 +142,7 @@ export const SignUpView = () => {
                             placeholder="********"
                             {...field}
                             type="password"
+                            disabled={isAnySocialPending}
                           />
                         </FormControl>
                         <FormMessage />
@@ -141,6 +160,7 @@ export const SignUpView = () => {
                             placeholder="********"
                             {...field}
                             type="password"
+                            disabled={isAnySocialPending}
                           />
                         </FormControl>
                         <FormMessage />
@@ -155,11 +175,15 @@ export const SignUpView = () => {
                     <AlertTitle>{error}</AlertTitle>
                   </Alert>
                 )}
-                <Button disabled={pending} type="submit" className="w-full">
+                <Button
+                  disabled={pending || isAnySocialPending}
+                  type="submit"
+                  className="w-full"
+                >
                   {pending ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    'Sign in'
+                    'Sign up'
                   )}
                 </Button>
                 <div className="after:border-border relative text-center text-sm after:top-1/2 after:z-0 after:flex after:items-center after:justify-center after:border-dashed">
@@ -168,11 +192,43 @@ export const SignUpView = () => {
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" type="button" className="w-full">
-                    Google
+                  <Button
+                    onClick={() => {
+                      setSocialPending(prev => ({ ...prev, google: true }));
+                      authClient.signIn.social({
+                        provider: 'google',
+                        callbackURL: '/',
+                      });
+                    }}
+                    disabled={socialPending.google}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                  >
+                    {socialPending.google ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <FaGoogle />
+                    )}
                   </Button>
-                  <Button variant="outline" type="button" className="w-full">
-                    Github
+                  <Button
+                    onClick={() => {
+                      setSocialPending(prev => ({ ...prev, github: true }));
+                      authClient.signIn.social({
+                        provider: 'github',
+                        callbackURL: '/',
+                      });
+                    }}
+                    disabled={socialPending.github}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                  >
+                    {socialPending.github ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <FaGithub />
+                    )}
                   </Button>
                 </div>
                 <div className="text-center text-sm">
